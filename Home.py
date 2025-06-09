@@ -35,12 +35,15 @@ st.markdown("""
 
 # Section to Add New Person to Bounty List
 st.header("Add a New Bounty")
-with st.form("add_bounty_form"):
-    name = st.text_input("Name of the Person")
-    info = st.text_area("Information / Description")
-    image = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"])
-    initial_bounty = st.number_input("Initial Bounty (USD)", min_value=0.0, step=1.0)
-    submitted = st.form_submit_button("Add to Bounty List")
+with st.form("add_person"):
+    name = st.text_input("Name")
+    photo = st.file_uploader("Upload Photo", type=["png", "jpg", "jpeg"])
+    info = st.text_area("Information")
+    reward = st.number_input("Initial Reward ($)", min_value=0)
+    country = st.text_input("Country of Residence")
+    last_seen = st.text_input("Last Seen Location")
+    affiliation = st.text_input("Affiliated Organization")
+    submitted = st.form_submit_button("Add to List")
 
     if submitted and name:
         bounty_id = str(uuid.uuid4())
