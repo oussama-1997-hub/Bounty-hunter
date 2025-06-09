@@ -32,6 +32,7 @@ def save_data():
         pickle.dump(st.session_state.claims, f)
 
 # Initialize session state
+# Initialize session state
 if 'bounties' not in st.session_state:
     load_data()
 
