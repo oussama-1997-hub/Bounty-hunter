@@ -1,7 +1,8 @@
 import streamlit as st
-import uuid
-import pandas as pd
-from datetime import datetime
+from PIL import Image
+import io
+
+st.set_page_config(page_title="Bounty Hunt Game", layout="centered")
 
 # Initialize session state storage
 if "bounties" not in st.session_state:
@@ -57,6 +58,12 @@ with st.form("add_person"):
         if not name or not photo:
             st.error("Please provide at least a name and a photo.")
         else:
+            # Convert uploaded photo to PNG bytes using PIL
+            pil_image = Image.open(photo)
+            img_bytes_io = io.BytesIO()
+            pil_image.save(img_bytes_io, format='PNG')
+            img_bytes = img_bytes_io.getvalue()
+
             new_entry = {
                 "name": name,
                 "info": info,
@@ -64,7 +71,7 @@ with st.form("add_person"):
                 "country": country,
                 "last_seen": last_seen,
                 "affiliation": affiliation,
-                "photo": photo.read(),
+                "photo": img_bytes,
             }
             st.session_state.bounties.append(new_entry)
             st.success(f"Added {name} to the bounty list.")
@@ -79,7 +86,10 @@ else:
     for idx, person in enumerate(st.session_state.bounties):
         cols = st.columns([1, 3])
         with cols[0]:
-            st.image(person["photo"], width=120)
+            if person["photo"]:
+                st.image(person["photo"], width=120)
+            else:
+                st.text("No photo available")
         with cols[1]:
             st.markdown(f"### {person['name']}")
             st.markdown(f"**Country:** {person['country'] or 'Unknown'}")
