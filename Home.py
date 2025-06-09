@@ -2,6 +2,7 @@ import streamlit as st
 import uuid
 import pandas as pd
 from datetime import datetime
+import datetime
 
 # Initialize session state
 if 'bounties' not in st.session_state:
@@ -69,23 +70,38 @@ for bounty in st.session_state.bounties:
             bounty["contributions"].append({"amount": amount, "date": datetime.now()})
             st.success(f"Added ${amount:.2f} to {bounty['name']}'s bounty.")
 
-        # Claim bounty
-        st.subheader("🎯 Claim This Bounty")
-        with st.form(f"claim_form_{bounty['id']}"):
-            proof = st.text_area("Provide your proof (description, evidence, etc.)")
-            anonymous = st.checkbox("Stay Anonymous")
-            bank_account = st.text_input("Your bank account to receive reward")
-            claim_submit = st.form_submit_button("Claim Reward")
 
-            if claim_submit and proof and bank_account:
-                st.session_state.claims.append({
-                    "bounty_id": bounty['id'],
-                    "proof": proof,
-                    "anonymous": anonymous,
-                    "bank_account": bank_account,
-                    "date": datetime.now()
-                })
-                st.success("Your claim has been submitted! The game master will verify and reward.")
+# Claim bounty
+st.subheader("🎯 Claim This Bounty")
+with st.form(f"claim_form_{bounty['id']}"):
+    proof = st.text_area("Provide your proof (description, evidence, etc.)")
+    
+    # New: Upload proof files (images, videos, documents)
+    proof_files = st.file_uploader(
+        "Upload proof files (images, videos, documents)", 
+        type=["jpg", "jpeg", "png", "mp4", "mov", "avi", "pdf", "docx"], 
+        accept_multiple_files=True
+    )
+    
+    anonymous = st.checkbox("Stay Anonymous")
+    bank_account = st.text_input("Your bank account to receive reward")
+    claim_submit = st.form_submit_button("Claim Reward")
+
+    if claim_submit:
+        if not proof and not proof_files:
+            st.warning("Please provide a proof description or upload at least one proof file.")
+        elif not bank_account:
+            st.warning("Please enter your bank account to receive the reward.")
+        else:
+            st.session_state.claims.append({
+                "bounty_id": bounty['id'],
+                "proof_text": proof,
+                "proof_files": proof_files,
+                "anonymous": anonymous,
+                "bank_account": bank_account,
+                "date": datetime.datetime.now()
+            })
+            st.success("Your claim has been submitted! The game master will verify and reward.")
 
 # (Optional) Admin view
 st.sidebar.header("Admin Panel")
