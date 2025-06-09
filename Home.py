@@ -75,21 +75,32 @@ for bounty in st.session_state.bounties:
 
         # Claim bounty
         st.subheader("🎯 Claim This Bounty")
-        with st.form(f"claim_form_{bounty['id']}"):
-            proof = st.text_area("Provide your proof (description, evidence, etc.)")
-            anonymous = st.checkbox("Stay Anonymous")
-            bank_account = st.text_input("Your bank account to receive reward")
-            claim_submit = st.form_submit_button("Claim Reward")
+        with st.expander("🎯 Claim a Bounty"):
+    bounty_names = [b["name"] for b in st.session_state.bounties]
+    selected_name = st.selectbox("Select Person", bounty_names)
+    proof_files = st.file_uploader(
+        "Upload your proof (video, image, or document)", 
+        type=["jpg", "jpeg", "png", "mp4", "mov", "avi", "pdf", "docx"],
+        accept_multiple_files=True
+    )
+    bank_account = st.text_input("Bank Account (IBAN or other method)")
+    anonymous = st.checkbox("Stay anonymous")
+    submit_claim = st.button("Submit Claim")
 
-            if claim_submit and proof and bank_account:
-                st.session_state.claims.append({
-                    "bounty_id": bounty['id'],
-                    "proof": proof,
-                    "anonymous": anonymous,
-                    "bank_account": bank_account,
-                    "date": datetime.now()
-                })
-                st.success("Your claim has been submitted! The game master will verify and reward.")
+    if submit_claim:
+        if not proof_files:
+            st.warning("Please upload at least one proof file.")
+        elif not bank_account:
+            st.warning("Please enter a bank account to receive the reward.")
+        else:
+            if "claims" not in st.session_state:
+                st.session_state.claims = []
+            st.session_state.claims.append({
+                "target": selected_name,
+                "proof": proof_files,
+                "bank_account": bank_account if not anonymous else "Anonymous",
+            })
+            st.success("Claim submitted! The admin will review your proof.")
 
 # (Optional) Admin view
 st.sidebar.header("Admin Panel")
