@@ -8,6 +8,7 @@ import os
 # File paths
 BOUNTY_FILE = "bounties.pkl"
 CLAIM_FILE = "claims.pkl"
+ADMIN_PASSWORD = "admin123"  # 🔐 Change this to your desired password
 
 # Load from file if exists
 def load_data():
@@ -37,7 +38,24 @@ if 'bounties' not in st.session_state:
 if 'claims' not in st.session_state:
     load_data()
 
-# Title and intro
+if 'admin_logged_in' not in st.session_state:
+    st.session_state.admin_logged_in = False
+
+# Sidebar admin login
+st.sidebar.header("🔐 Admin Access")
+if not st.session_state.admin_logged_in:
+    admin_pass = st.sidebar.text_input("Enter admin password", type="password")
+    if st.sidebar.button("Login"):
+        if admin_pass == ADMIN_PASSWORD:
+            st.session_state.admin_logged_in = True
+            st.sidebar.success("Admin logged in.")
+        else:
+            st.sidebar.error("Incorrect password.")
+else:
+    if st.sidebar.button("Logout"):
+        st.session_state.admin_logged_in = False
+
+# Title and rules
 st.title("🎯 Bounty Board of Terrorists")
 st.markdown("""
 <div style="
@@ -58,7 +76,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Section to Add New Person to Bounty List
+# Add bounty
 st.header("Add a New Bounty")
 with st.form("add_bounty_form"):
     name = st.text_input("Name of the Person")
@@ -81,17 +99,17 @@ with st.form("add_bounty_form"):
         save_data()
         st.success(f"{name} added to the bounty list!")
 
-# Display Bounty List
+# Display bounty list
 st.header("🕵️ Active Bounties")
 
-for bounty in st.session_state.bounties:
+for i, bounty in enumerate(st.session_state.bounties):
     with st.expander(f"{bounty['name']} - ${bounty['bounty']:.2f}"):
         st.write(bounty["info"])
         if bounty["image"]:
             st.image(bounty["image"], width=200)
         st.markdown(f"**Total Bounty:** ${bounty['bounty']:.2f}")
 
-        # Add to bounty
+        # Contribute
         amount = st.number_input(f"Add to bounty for {bounty['name']}", key=f"add_{bounty['id']}", min_value=0.0, step=1.0)
         if st.button(f"Contribute to {bounty['name']}", key=f"btn_{bounty['id']}"):
             bounty["bounty"] += amount
@@ -99,13 +117,13 @@ for bounty in st.session_state.bounties:
             save_data()
             st.success(f"Added ${amount:.2f} to {bounty['name']}'s bounty.")
 
-        # Claim bounty
+        # Claim
         st.subheader("🎯 Claim This Bounty")
         with st.form(f"claim_form_{bounty['id']}"):
             proof = st.text_area("Provide your proof (description, evidence, etc.)", key=f"proof_{bounty['id']}")
             proof_files = st.file_uploader(
-                "Upload proof files (images, videos, documents)", 
-                type=["jpg", "jpeg", "png", "mp4", "mov", "avi", "pdf", "docx"], 
+                "Upload proof files (images, videos, documents)",
+                type=["jpg", "jpeg", "png", "mp4", "mov", "avi", "pdf", "docx"],
                 accept_multiple_files=True,
                 key=f"files_{bounty['id']}"
             )
@@ -130,9 +148,31 @@ for bounty in st.session_state.bounties:
                     save_data()
                     st.success("Your claim has been submitted! The game master will verify and reward.")
 
-# Admin Panel
-st.sidebar.header("Admin Panel")
-if st.sidebar.checkbox("Show All Claims"):
+        # Admin options: edit or delete
+        if st.session_state.admin_logged_in:
+            st.markdown("---")
+            st.subheader("🛠 Admin Controls")
+
+            with st.expander("✏️ Edit Bounty"):
+                new_name = st.text_input("Edit name", value=bounty["name"], key=f"edit_name_{bounty['id']}")
+                new_info = st.text_area("Edit info", value=bounty["info"], key=f"edit_info_{bounty['id']}")
+                new_bounty = st.number_input("Edit bounty amount", value=bounty["bounty"], key=f"edit_bounty_{bounty['id']}")
+                if st.button("Save Changes", key=f"edit_btn_{bounty['id']}"):
+                    bounty["name"] = new_name
+                    bounty["info"] = new_info
+                    bounty["bounty"] = new_bounty
+                    save_data()
+                    st.success("Bounty updated!")
+
+            if st.button("❌ Delete Bounty", key=f"delete_{bounty['id']}"):
+                st.session_state.bounties.pop(i)
+                save_data()
+                st.success("Bounty deleted.")
+                st.experimental_rerun()
+
+# Admin view of all claims
+if st.session_state.admin_logged_in:
+    st.sidebar.header("📁 All Claims")
     for claim in st.session_state.claims:
         bounty_name = next((b["name"] for b in st.session_state.bounties if b["id"] == claim["bounty_id"]), "Unknown")
         st.sidebar.write(f"🧨 Bounty: {bounty_name}")
