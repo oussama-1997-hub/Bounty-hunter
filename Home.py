@@ -12,6 +12,7 @@ if 'claims' not in st.session_state:
 
 st.title("🎯 Bounty Board of terrorists")
 st.markdown("""
+st.markdown("""
 <div style='text-align: justify; padding: 10px; font-size: 18px; color: black;'>
     All the individuals on this list are confirmed terrorists and war criminals wanted by the International Court of Justice. There is overwhelming evidence of their criminal activities, including numerous recordings, videos, posts, images, and even their own confessions.
 
