@@ -10,7 +10,12 @@ if 'bounties' not in st.session_state:
 if 'claims' not in st.session_state:
     st.session_state.claims = []
 
-st.title("🎯 Bounty Board Game")
+st.title("🎯 Bounty Board of terrorists and war criminals")
+st.markdown("""
+<div style='text-align: center; padding: 10px; font-size: 22px; font-weight: 600; color: #4CAF50;'>
+    🎉 Enjoy the game and have fun 🎯
+</div>
+""", unsafe_allow_html=True)
 
 # Section to Add New Person to Bounty List
 st.header("Add a New Bounty")
