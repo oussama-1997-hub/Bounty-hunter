@@ -10,10 +10,14 @@ if 'bounties' not in st.session_state:
 if 'claims' not in st.session_state:
     st.session_state.claims = []
 
-st.title("🎯 Bounty Board of terrorists and war criminals")
+st.title("🎯 Bounty Board of terrorists")
 st.markdown("""
 <div style='text-align: center; padding: 10px; font-size: 22px; font-weight: 600; color: #4CAF50;'>
-    🎉 Enjoy the game and have fun 🎯
+    All the individuals on this list are confirmed terrorists and war criminals wanted by the International Court of Justice. There is overwhelming evidence of their criminal activities, including numerous recordings, videos, posts, images, and even their own confessions.
+
+If you manage to eliminate any one of them and provide valid proof, you will immediately receive the reward specified next to their name. You may, of course, choose to remain completely anonymous without revealing your identity.
+
+In the event that you are caught or killed during the mission, your family members or a person of your choice will be entitled to receive the reward on your behalf.
 </div>
 """, unsafe_allow_html=True)
 
