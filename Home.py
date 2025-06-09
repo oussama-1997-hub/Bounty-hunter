@@ -149,27 +149,27 @@ for i, bounty in enumerate(st.session_state.bounties):
                     save_data()
                     st.success("Your claim has been submitted! The game master will verify and reward.")
 
-        # Admin options: edit or delete
-        if st.session_state.admin_logged_in:
-            st.markdown("---")
-            st.subheader("🛠 Admin Controls")
+       # Admin options: edit or delete
+if st.session_state.admin_logged_in:
+    st.markdown("---")
+    st.subheader("🛠 Admin Controls")
 
-            with st.expander("✏️ Edit Bounty"):
-                new_name = st.text_input("Edit name", value=bounty["name"], key=f"edit_name_{bounty['id']}")
-                new_info = st.text_area("Edit info", value=bounty["info"], key=f"edit_info_{bounty['id']}")
-                new_bounty = st.number_input("Edit bounty amount", value=bounty["bounty"], key=f"edit_bounty_{bounty['id']}")
-                if st.button("Save Changes", key=f"edit_btn_{bounty['id']}"):
-                    bounty["name"] = new_name
-                    bounty["info"] = new_info
-                    bounty["bounty"] = new_bounty
-                    save_data()
-                    st.success("Bounty updated!")
+    st.markdown("### ✏️ Edit Bounty")
+    new_name = st.text_input("Edit name", value=bounty["name"], key=f"edit_name_{bounty['id']}")
+    new_info = st.text_area("Edit info", value=bounty["info"], key=f"edit_info_{bounty['id']}")
+    new_bounty = st.number_input("Edit bounty amount", value=bounty["bounty"], key=f"edit_bounty_{bounty['id']}")
+    if st.button("Save Changes", key=f"edit_btn_{bounty['id']}"):
+        bounty["name"] = new_name
+        bounty["info"] = new_info
+        bounty["bounty"] = new_bounty
+        save_data()
+        st.success("Bounty updated!")
 
-            if st.button("❌ Delete Bounty", key=f"delete_{bounty['id']}"):
-                st.session_state.bounties.pop(i)
-                save_data()
-                st.success("Bounty deleted.")
-                st.experimental_rerun()
+    if st.button("❌ Delete Bounty", key=f"delete_{bounty['id']}"):
+        st.session_state.bounties.pop(i)
+        save_data()
+        st.success("Bounty deleted.")
+        st.experimental_rerun()
 
 # Admin view of all claims
 if st.session_state.admin_logged_in:
