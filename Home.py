@@ -2,15 +2,43 @@ import streamlit as st
 import uuid
 import pandas as pd
 from datetime import datetime
+import pickle
+import os
+
+# File paths
+BOUNTY_FILE = "bounties.pkl"
+CLAIM_FILE = "claims.pkl"
+
+# Load from file if exists
+def load_data():
+    if os.path.exists(BOUNTY_FILE):
+        with open(BOUNTY_FILE, "rb") as f:
+            st.session_state.bounties = pickle.load(f)
+    else:
+        st.session_state.bounties = []
+
+    if os.path.exists(CLAIM_FILE):
+        with open(CLAIM_FILE, "rb") as f:
+            st.session_state.claims = pickle.load(f)
+    else:
+        st.session_state.claims = []
+
+# Save to file
+def save_data():
+    with open(BOUNTY_FILE, "wb") as f:
+        pickle.dump(st.session_state.bounties, f)
+    with open(CLAIM_FILE, "wb") as f:
+        pickle.dump(st.session_state.claims, f)
 
 # Initialize session state
 if 'bounties' not in st.session_state:
-    st.session_state.bounties = []
+    load_data()
 
 if 'claims' not in st.session_state:
-    st.session_state.claims = []
+    load_data()
 
-st.title("🎯 Bounty Board of terrorists")
+# Title and intro
+st.title("🎯 Bounty Board of Terrorists")
 st.markdown("""
 <div style="
     background-color: #f9f9f9;
@@ -24,9 +52,9 @@ st.markdown("""
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 ">
     <strong>📜 Rules, Objectives & Regulations:</strong><br><br>
-    All the individuals on this list are confirmed terrorists and war criminals wanted by the International Court of Justice. There is overwhelming evidence of their criminal activities, including numerous recordings, videos, posts, images, and even their own confessions.<br><br>
-    If you manage to eliminate any one of them and provide valid proof, you will immediately receive the reward specified next to their name. You may, of course, choose to remain completely anonymous without revealing your identity.<br><br>
-    In the event that you are caught or killed during the mission, your family members or a person of your choice will be entitled to receive the reward on your behalf.
+    All the individuals on this list are confirmed terrorists and war criminals wanted by the International Criminal Court. There is overwhelming evidence of their criminal activities, including numerous recordings, videos, posts, images, and their own public declarations.<br><br>
+    If you manage to eliminate any one of them and provide valid proof, you will immediately receive the reward specified next to their name. You may, of course, choose to remain completely anonymous.<br><br>
+    In the event that you are caught or killed during the mission, your designated person or family will be entitled to receive the reward on your behalf.
 </div>
 """, unsafe_allow_html=True)
 
@@ -50,6 +78,7 @@ with st.form("add_bounty_form"):
             "contributions": [],
             "date_added": datetime.now(),
         })
+        save_data()
         st.success(f"{name} added to the bounty list!")
 
 # Display Bounty List
@@ -67,6 +96,7 @@ for bounty in st.session_state.bounties:
         if st.button(f"Contribute to {bounty['name']}", key=f"btn_{bounty['id']}"):
             bounty["bounty"] += amount
             bounty["contributions"].append({"amount": amount, "date": datetime.now()})
+            save_data()
             st.success(f"Added ${amount:.2f} to {bounty['name']}'s bounty.")
 
         # Claim bounty
@@ -92,20 +122,25 @@ for bounty in st.session_state.bounties:
                     st.session_state.claims.append({
                         "bounty_id": bounty['id'],
                         "proof_text": proof,
-                        "proof_files": proof_files,
+                        "proof_files": [file.name for file in proof_files] if proof_files else [],
                         "anonymous": anonymous,
                         "bank_account": bank_account,
                         "date": datetime.now()
                     })
+                    save_data()
                     st.success("Your claim has been submitted! The game master will verify and reward.")
 
-# (Optional) Admin view
+# Admin Panel
 st.sidebar.header("Admin Panel")
 if st.sidebar.checkbox("Show All Claims"):
     for claim in st.session_state.claims:
         bounty_name = next((b["name"] for b in st.session_state.bounties if b["id"] == claim["bounty_id"]), "Unknown")
-        st.sidebar.write(f"Bounty: {bounty_name}")
-        st.sidebar.write(f"Proof: {claim['proof_text']}")
-        st.sidebar.write(f"Bank Account: {'Hidden' if claim['anonymous'] else claim['bank_account']}")
-        st.sidebar.write(f"Submitted on: {claim['date']}")
+        st.sidebar.write(f"🧨 Bounty: {bounty_name}")
+        st.sidebar.write(f"📝 Proof: {claim['proof_text']}")
+        if claim['proof_files']:
+            st.sidebar.write("📎 Files:")
+            for file_name in claim['proof_files']:
+                st.sidebar.write(f"- {file_name}")
+        st.sidebar.write(f"🏦 Bank Account: {'Hidden' if claim['anonymous'] else claim['bank_account']}")
+        st.sidebar.write(f"📅 Submitted on: {claim['date']}")
         st.sidebar.markdown("---")
